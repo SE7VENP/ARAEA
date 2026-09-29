@@ -1,0 +1,16 @@
+# Core (required)
+websockets>=12.0
+Pillow>=10.0
+numpy>=1.24
+scipy>=1.11
+
+# Tier 1–2: Stable Diffusion (GPU recommended, 6GB+ VRAM)
+# torch>=2.0               # install separately from pytorch.org for your CUDA version
+# diffusers>=0.24
+# transformers>=4.36
+# accelerate>=0.25
+# xformers>=0.0.23          # optional memory optimization
+
+# Tier 3: StyleGAN ONNX (CPU or GPU)
+# onnxruntime-gpu>=1.17     # GPU version
+# onnxruntime>=1.17         # CPU version (install one or the other)

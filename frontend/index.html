@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ARAEA — AIoT Music Ambient System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet"/>
+    <link rel="manifest" href="/manifest.json"/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
+    <meta name="theme-color" content="#3b82f6"/>
+    <!--
+      EME robustness patch — must run BEFORE the Spotify Web Playback SDK loads.
+      The SDK calls navigator.requestMediaKeySystemAccess() without specifying a
+      robustness level, which causes Chrome to log a "robustness level" warning.
+      We wrap the native function here to inject SW_SECURE_CRYPTO robustness into
+      every VideoCapability/AudioCapability config Spotify passes, silencing the warning.
+    -->
+    <script>
+      (function () {
+        var _origRMKSA = navigator.requestMediaKeySystemAccess
+          ? navigator.requestMediaKeySystemAccess.bind(navigator)
+          : null;
+        if (!_origRMKSA) return;
+        navigator.requestMediaKeySystemAccess = function (keySystem, configs) {
+          var patched = (configs || []).map(function (cfg) {
+            function patchCaps(caps) {
+              return (caps || []).map(function (cap) {
+                return cap.robustness ? cap : Object.assign({}, cap, { robustness: "SW_SECURE_CRYPTO" });
+              });
+            }
+            return Object.assign({}, cfg, {
+              videoCapabilities: patchCaps(cfg.videoCapabilities),
+              audioCapabilities: patchCaps(cfg.audioCapabilities),
+            });
+          });
+          return _origRMKSA(keySystem, patched);
+        };
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
